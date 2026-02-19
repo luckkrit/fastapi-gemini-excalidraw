@@ -19,7 +19,7 @@ Example element: {"type": "rectangle", "x": 100, "y": 100, "width": 100, "height
 
 # Load your API key from a .env file
 load_dotenv()
-GEMINI_MODEL=os.getenv('GEMINI_MODEL')
+GEMINI_MODEL=os.getenv('GEMINI_MODEL2')
 app = FastAPI(title="Gemini AI Service")
 
 # Initialize the Gemini Client
