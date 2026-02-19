@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Diagram Generator</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@excalidraw/excalidraw/dist/excalidraw.development.js"></script>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; font-family: sans-serif; }
+        #toolbar { padding: 15px; background: #232329; color: white; display: flex; gap: 10px; }
+        #app { flex-grow: 1; width: 100%; }
+        input { flex-grow: 1; padding: 8px; border-radius: 4px; border: none; }
+        button { padding: 8px 16px; cursor: pointer; background: #6965db; color: white; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <input type="text" id="prompt" placeholder="Describe your diagram (e.g., 'A login flow with 3 steps')">
+        <button onclick="generate()">Generate Diagram</button>
+    </div>
+    <div id="app"></div>
+
+    <script>
+        const { Excalidraw } = ExcalidrawLib;
+        let setElementsExternal;
+
+        function App() {
+            const [elements, setElements] = React.useState([]);
+            setElementsExternal = setElements;
+            return React.createElement(Excalidraw, { elements });
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById("app"));
+        root.render(React.createElement(App));
+
+        async function generate() {
+            const prompt = document.getElementById('prompt').value;
+            const formData = new FormData();
+            formData.append('prompt', prompt);
+
+            const response = await fetch('/generate_excalidraw', { method: 'POST', body: formData });
+            const data = await response.json();
+            
+            if (data.elements) {
+                setElementsExternal(data.elements);
+            } else {
+                alert("Error: " + data.error);
+            }
+        }
+    </script>
+</body>
+</html>
