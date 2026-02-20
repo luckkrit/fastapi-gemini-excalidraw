@@ -1,3 +1,4 @@
 /.env
 /__pycache__
-/gemini_excalidraw/__pycache__
+gemini_excalidraw/__pycache__/
+
