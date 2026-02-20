@@ -1,1 +1,5 @@
 A FastAPI application that processes user-submitted prompts through an HTML form, utilizes Gemini to generate diagram elements, and renders the result in an Excalidraw canvas.
+
+```python
+fastapi dev main.py
+```
