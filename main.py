@@ -62,7 +62,20 @@ async def generate_diagram(prompt: str = Form(...)):
         elements = json.loads(clean_json)
         return {"elements": elements}
     except Exception as e:
-        return {"error": str(e)}
+        # return {"error": str(e)}
+        print("============= error "+str(e)+" ==============")
+        elements = mock_elements()
+        return {"elements": elements}
+
+def mock_elements():
+    elements = []
+    with open("arch.excalidraw", "r") as f:
+            data = json.load(f)
+            elements = data['elements']
+    print("====== load excalidraw from file ======")
+    print(elements)
+    return elements
+    
 
 if __name__ == "__main__":
     import uvicorn
