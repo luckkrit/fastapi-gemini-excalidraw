@@ -33,12 +33,8 @@ from .sanitize_elements import sanitize_elements, fix_elements
 # Config
 # ─────────────────────────────────────────────
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
-GEMINI_MODEL   = os.getenv("GEMINI_MODEL", "YOUR_GEMINI_MODEL_HERE")
-
-
-load_dotenv()
 GEMINI_MODEL=os.getenv('GEMINI_MODEL3')
+print("Gemini model = "+GEMINI_MODEL)
 
 # Initialize the Gemini Client
 # It will automatically look for the GEMINI_API_KEY environment variable
@@ -65,7 +61,7 @@ def dump_result(label: str, result) -> None:
 # Step 1: Gemini → Excalidraw elements JSON
 # ─────────────────────────────────────────────
 def generate_elements(user_prompt: str, system_prompt: str) -> list:
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    
     print(f"[1/2] Sending to Gemini ({GEMINI_MODEL})...")
     response = client.models.generate_content(
         model=GEMINI_MODEL,
@@ -93,7 +89,7 @@ def generate_elements(user_prompt: str, system_prompt: str) -> list:
 async def generate_diagram(prompt: str, system_prompt:str):
     try:
         response = await client.aio.models.generate_content(
-            model="gemini-2.0-flash",
+            model=GEMINI_MODEL,
             config={"system_instruction": system_prompt},
             contents=prompt
         )
