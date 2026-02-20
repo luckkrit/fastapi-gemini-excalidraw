@@ -143,5 +143,36 @@ def sanitize_element(el: dict) -> dict:
     return el
 
 
+def extract_labels(elements: list) -> list:
+    """
+    Convert inline label properties into standalone text elements.
+    Must run BEFORE sanitize_elements so labels aren't silently deleted.
+    """
+    extra_texts = []
+    for el in elements:
+        label = el.get("label")
+        if not label:
+            continue
+        text = label.get("text", "")
+        if not text:
+            continue
+        # Create a centered text element over the shape
+        extra_texts.append({
+            "id": el["id"] + "_lbl",
+            "type": "text",
+            "x": el.get("x", 0) + el.get("width", 0) / 2 - len(text) * 5,
+            "y": el.get("y", 0) + el.get("height", 0) / 2 - 10,
+            "width": len(text) * 10,
+            "height": 20,
+            "text": text,
+            "originalText": text,
+            "fontSize": 15,
+            "fontFamily": 1,
+            "textAlign": "center",
+            "verticalAlign": "middle",
+            "containerId": None,
+        })
+    return elements + extra_texts
+
 def sanitize_elements(elements: list) -> list:
     return [sanitize_element(el) for el in elements]

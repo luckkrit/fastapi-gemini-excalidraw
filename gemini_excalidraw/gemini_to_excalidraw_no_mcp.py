@@ -34,7 +34,7 @@ from .sanitize_elements import sanitize_elements, fix_elements
 # ─────────────────────────────────────────────
 load_dotenv()
 GEMINI_MODEL=os.getenv('GEMINI_MODEL3')
-print("Gemini model = "+GEMINI_MODEL)
+
 
 # Initialize the Gemini Client
 # It will automatically look for the GEMINI_API_KEY environment variable
@@ -88,11 +88,24 @@ def generate_elements(user_prompt: str, system_prompt: str) -> list:
 
 async def generate_diagram(prompt: str, system_prompt:str):
     try:
+        # Debug: measure token count and time
+        import time
+        t0 = time.time()
+
+        token_count = await client.aio.models.count_tokens(
+            model=GEMINI_MODEL,
+            contents=[system_prompt, prompt]
+        )
+        print("Gemini model = "+GEMINI_MODEL)
+        print(f"Token count: {token_count.total_tokens}")
+
         response = await client.aio.models.generate_content(
             model=GEMINI_MODEL,
             config={"system_instruction": system_prompt},
             contents=prompt
         )
+        print(f"Generation time: {time.time() - t0:.2f}s")
+
         # Clean the response in case the AI added markdown
         clean_json = response.text.strip().replace("```json", "").replace("```", "")
         elements = json.loads(clean_json)
@@ -140,8 +153,8 @@ def main():
     
     print(f"[2/2] Santize elements")
     # Step 2 — Sanitize
-    elements = sanitize_elements(elements)
-    
+    elements = extract_labels(elements)
+    elements = sanitize_elements(elements)    
     elements = fix_elements(elements) 
 
     excalidraw_file = {
