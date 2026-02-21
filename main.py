@@ -3,16 +3,22 @@ import json
 from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-
+from fastmcp import Client
+from fastmcp.client.transports import NodeStdioTransport
 from dotenv import load_dotenv
-from gemini_excalidraw import gemini_to_excalidraw_no_mcp
+from google.genai import types
+from google import genai
+# from gemini_excalidraw import gemini_to_excalidraw_no_mcp
 
-
+transport = NodeStdioTransport("/home/codespace/nvm/current/bin/npx", ["-y", "@iflow-mcp/mcp-mermaid"])
+mcp_client = Client(transport)
 app = FastAPI(title="Gemini AI Service")
 
 # Initialize the Gemini Client
 # It will automatically look for the GEMINI_API_KEY environment variable
-# client = genai.Client()
+load_dotenv()
+GEMINI_MODEL=os.getenv('GEMINI_MODEL3')
+client = genai.Client()
 
 # Define the request body structure
 class Query(BaseModel):
@@ -36,28 +42,37 @@ async def index():
     
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
-    
-@app.post("/generate_excalidraw")
-async def generate_diagram(prompt: str = Form(...)):
-    # try:
-    #     response = await client.aio.models.generate_content(
-    #         model="gemini-2.0-flash",
-    #         config={"system_instruction": SYSTEM_PROMPT},
-    #         contents=prompt
-    #     )
-    #     # Clean the response in case the AI added markdown
-    #     clean_json = response.text.strip().replace("```json", "").replace("```", "")
-    #     elements = json.loads(clean_json)
-    #     return {"elements": elements}
-    # except Exception as e:
-    #     # return {"error": str(e)}
-    #     print("============= error "+str(e)+" ==============")
-    #     elements = mock_elements()
-    #     return {"elements": elements}
-    diagram_type = gemini_to_excalidraw_no_mcp.detect_diagram_type(prompt) 
-    system_prompt = gemini_to_excalidraw_no_mcp.get_system_prompt(diagram_type)
-    return await gemini_to_excalidraw_no_mcp.generate_diagram(prompt,system_prompt)
 
+@app.get("/generate_text", response_class=HTMLResponse)    
+async def create_diagram():
+    async with mcp_client:
+        # Gemini will see the tools provided by the mermaid_mcp session
+        # (e.g., 'render_mermaid', 'save_diagram')
+        # response = await client.aio.models.generate_content(
+        #     model="gemini-2.0-flash",
+        #     contents="Create a high-level flowchart of a user ordering coffee and render it.",
+        #     config=types.GenerateContentConfig(
+        #         tools=[mermaid_mcp.session], # Connects the "Tool" to Gemini
+        #         temperature=0.1
+        #     ),
+        # )
+        try:
+
+            response = await client.aio.models.generate_content(
+                model=GEMINI_MODEL,
+                contents="Create a high-level flowchart of a user ordering coffee and render it.",
+                config=types.GenerateContentConfig(
+                    tools=[mermaid_mcp.session], # Connects the "Tool" to Gemini
+                    temperature=0.1
+                ),
+            )
+            return response.text
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+        # Gemini executes the tool call automatically. 
+        # The response will contain the result of the rendering.
+        # print(f"Gemini Response: {response.text}")
 
 if __name__ == "__main__":
     import uvicorn
